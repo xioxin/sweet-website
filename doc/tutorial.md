@@ -4,12 +4,12 @@ toc: true
 use_anchors: true
 ---
 
-# Introduction
+# 介绍
 
-Sweet brings the hygienic macros of languages like Scheme and Rust to JavaScript.
-Macros allow you to sweeten the syntax of JavaScript and craft the language you’ve always wanted.
+Sweet为JavaScript带来了Scheme和Rust等语言的卫生宏。
+宏允许您使用Javascript的语法来修饰您一直想要的语言。
 
-## Installation and Getting Started
+## 安装和入门
 
 Install Sweet with npm:
 
@@ -38,11 +38,13 @@ console.log('hello, world!')
 ```
 
 
-## Babel Backend
+## Babel后端
 
-Note that Sweet uses [Babel](https://babeljs.io/) as a backend. After Sweet has done its work of finding and expanding macros, the resulting code is run through Babel.
 
-By default Babel performs no transformations so you will need to configure it according to your needs. The easiest way to do this is via a [`.babelrc`](https://babeljs.io/docs/usage/babelrc/) file. A minimal configuration looks something like:
+注意sweet使用[babel]（https://babeljs.io/）作为后端。Sweet完成了宏的查找和扩展工作后，生成的代码将通过babel运行。
+
+
+默认情况下，babel不执行任何转换，因此您需要根据需要配置它。最简单的方法是通过一个[`.babelrc`]（https://babeljs.io/docs/usage/babelrc/）文件。最小配置如下所示：
 
 ```js
 {
@@ -50,18 +52,19 @@ By default Babel performs no transformations so you will need to configure it ac
 }
 ```
 
-Where you've installed the es2015 preset via npm:
+
+通过NPM安装ES2015预设：
 
 ```
 npm install babel-preset-es2015
 ```
 
-If you do not want to use Babel at all, pass the `--no-babel` flag to `sjs`.
+如果您根本不想使用babel，请将“--no babel”标志传递给“sjs”。
 
 # Sweet Hello
+宏是如何工作的？
 
-How do macros work?
-Well, in a sense macros are a bit like compiletime functions; just like functions, macros have definitions and invocations which work together to abstract code into a single location so you don't keep repeating yourself.
+从某种意义上讲，宏有点像compiletime函数；就像函数一样，宏也有定义和调用，它们一起将代码抽象到一个位置，这样您就不会一直重复自己的代码。
 
 Consider the hello world example again:
 
@@ -71,25 +74,33 @@ syntax hi = function (ctx) {
 };
 hi
 ```
+前三行构成宏定义。关键字“syntax”有点像“let”，因为它在当前块范围内创建了一个新变量。‘syntax’不是为运行时值创建变量，而是为_compileTime值创建一个新变量。在这种情况下，“hi”是绑定到前三行上定义的compileTime函数的变量。
 
-The first three lines make up the macro definition. The `syntax` keyword is a bit like `let` in that it creates a new variable in the current block scope. Rather than create a variable for a runtime value, `syntax` creates a new variable for a _compiletime value_. In this case, `hi` is the variable bound to the compiletime function defined on the first three lines.
+在本例中，`syntax`将变量设置为函数，但变量可以设置为任何javascript值。目前，这一点比较学术化，因为Sweet不提供实际使用编译时间函数以外的任何东西的方法。但是，最终将添加此功能。
 
-In this example, `syntax` sets the variable to a function, but the variable can be set to any JavaScript value. Currently, this point is rather academic since Sweet does not provide a way to actually _use_ anything other than a compiletime function. However, this feature will be added eventually.
+一旦定义了宏，就可以调用它。在上面的第三行，只需编写“hi”就可以调用宏。
 
-Once a macro has been defined, it can be invoked. On line three above the macro is invoked simply by writing `hi`.
 
-When the Sweet compiler sees the `hi` identifier bound to the compiletime function, the function is invoked and its return value is used to replace the invoking occurrence of `hi`. In this case, that means that `hi` is replaced with `console.log('hello, world!')`.
+当Sweet编译器看到绑定到compileTime函数的“hi”标识符时，将调用该函数，并使用其返回值替换调用出现的“hi”。在本例中，这意味着“hi”将替换为“console.log”（“hello，world！”）'.
+
+
+
+
 
 Compiletime functions defined by `syntax` must return an array of syntax objects. You can easily create these with a _syntax template_. Syntax templates are template literals with a `\#` tag, which create a List (see the [immutable.js docs](https://facebook.github.io/immutable-js/docs/#/List) for its API)
 of syntax objects.
+由'syntax'定义的compileTime函数必须返回一个语法对象数组。您可以使用\语法模板\轻松创建这些。语法模板是带有`\ `标记的模板文本，它创建了一个列表（请参阅[immutable.js docs]（https://facebook.github.io/immutable js/docs//list）了解其API）
+
+语法对象。
 
 A _syntax object_ is  Sweet's internal representation of syntax. Syntax objects are somewhat like tokens from traditional compilers except that delimiters cause syntax objects to nest. This nesting gives Sweet more structure to work with during compilation. If you are coming from Lisp or Scheme, you can think of them a bit like s-expressions.
 
 
 # Sweet New
 
-Let's move on to a slightly more interesting example.
-Pretend you are using an OO framework for JavaScript where instead of using `new` we want to call a `.create` method that has been monkey patched onto `Function.prototype` (don't worry, I won't judge... much). Rather than manually rewrite all usages of `new` to the `create` method you could define a macro that does it for you.
+让我们来看一个稍微有趣的例子。
+
+假设您使用的是用于javascript的OO框架，而不是使用“new”，我们想调用一个“create”方法，该方法已被猴修补到“function.prototype”上（不用担心，我不会判断…很多）。与其手动将“new”的所有用法重写为“create”方法，还不如定义一个宏来执行该操作。
 
 ```js
 syntax new = function (ctx) {
@@ -104,10 +115,9 @@ new Droid('BB-8', 'orange');
 ```js
 Droid.create('BB-8', 'orange');
 ```
+在这里，您可以看到宏的“ctx”参数提供了对宏调用站点语法的访问。此参数是名为_macro context_uu的迭代器。
 
-Here you can see the `ctx` parameter to the macro provides access to syntax at the macro call-site. This parameter is an iterator called the _macro context_.
-
-The macro context has the type:
+宏上下文的类型为：
 
 ```
 {

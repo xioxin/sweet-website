@@ -4,11 +4,11 @@ toc: true
 use_anchors: true
 ---
 
-# Introduction
+# 介绍
 
-This is the reference document for Sweet.js. For a gentle explanation of Sweet's concepts see the [tutorial](tutorial.html).
+这是sweet.js的参考文件。有关Sweet概念的简单解释，请参阅[教程](tutorial.html)。
 
-# Command Line API
+# 命令行接口
 
 - `--out-file <file>`: write result to file
 - `--out-dir <dir>`: write result to directory
